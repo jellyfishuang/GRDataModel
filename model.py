@@ -1,4 +1,5 @@
 import parse
+import math
 
 class IGSPlayer:
     # set player's info
@@ -18,6 +19,8 @@ class IGSPlayer:
         self.selectLack = None
         self.branchFactor = 0
         self.gameLength = 0
+        self.decisionCount = 0
+        self.HuCount = 0
         self.afterHu = False
         self.isBankruptcy = False
         self.changeTilelog = []
@@ -52,6 +55,7 @@ class IGSPlayer:
     def action_Discard(self, discard_str, hand_str):
         self.hand = parse.parseHandTile(hand_str)
         self.typeshand = parse.CalculateHandTileKindOfPieces(self.hand)
+        self.decisionCount += 1
 
         discard, is_notempty = parse.parseDiscard(discard_str)
 
@@ -66,12 +70,19 @@ class IGSPlayer:
             valueofhand = parse.CalculateHandTileKindOfPieces(before_hand)
             self.branchFactor += valueofhand
 
+        # 胡過之後手牌不能變動 (可能可槓 但不影響計算)
+        if self.afterHu:
+            self.branchFactor += 1
+
     # the player who do the action of Chi, Pong, Kong, Hu, the player's branchFactor must have add 1
     def action_pongkong(self):
         self.branchFactor += 1
+        # self.decisionCount += 1
 
     def action_hu(self):
         self.branchFactor += 1
+        # self.decisionCount += 1
+        self.HuCount += 1
         self.afterHu = True
 
     def action_bankruptcy(self):
@@ -95,7 +106,19 @@ class IGSPlayer:
 
     def print_GR(self):
         print('branchFactor:', self.branchFactor)
+        print('decisionCount:', self.decisionCount)
+        print('HuCount:', self.HuCount)
         print('gameLength:', self.gameLength)
 
+    def calculate_GR(self):
+        branch = self.branchFactor
+        decision = self.decisionCount
+        G = branch / decision
+        print('G:', G)
+        R = self.gameLength
+        print('R:', R)
+
+        GR = math.sqrt(G)  / R
+        print('GR:', GR)
 
 

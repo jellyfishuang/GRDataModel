@@ -4,12 +4,15 @@ from parse import parseStartCheck, parseBeginDeal, parseHandTile, parseDeal, par
 import model
 
 # 指定資料夾路徑
-folder_path = 'Mining'
+Folder_path = 'Mining'
+
+# 檢查玩家參數
+CheckPlayer = -1
 
 # 遍歷資料夾中的檔案
-for filename in os.listdir(folder_path):
+for filename in os.listdir(Folder_path):
     if filename.endswith('.csv'):
-        file_path = os.path.join(folder_path, filename)
+        file_path = os.path.join(Folder_path, filename)
         
         # 開啟CSV檔案
         with open(file_path, 'r') as file:
@@ -53,15 +56,19 @@ for filename in os.listdir(folder_path):
                     for i in range(4):
                         csv_players[i].add_GameLength()
                     csv_players[playerIndex].action_Discard(row[1], row[8])
+                    
+                    if CheckPlayer != -1 and playerIndex == CheckPlayer:
+                        print(int(row[9]), "Discard", csv_players[playerIndex].branchFactor, csv_players[playerIndex].gameLength)
                     #print(csv_players[playerIndex].branchFactor, csv_players[playerIndex].gameLength)
                     continue
 
                 # set action pong, kong
-                if row[0] == 'Pong' or row[0] == 'Kong' or row[0] == 'AddKong' or row[0] == 'ConcealedKong'\
-                      or row[0] == 'GunHu' or row[0] == 'CritSelfHu' or row[0] == 'GrabKongHu' or row[0] == 'CritGrabKongHu'\
-                        or row[0] == 'SelfHu' or row[0] == 'HuEnd':
+                if row[0] == 'Pong' or row[0] == 'Kong' or row[0] == 'AddKong' or row[0] == 'ConcealedKong':
                     playerIndex = int(row[14])
-                    csv_players[playerIndex].action_pongkonghu()
+                    csv_players[playerIndex].action_pongkong()
+
+                    if CheckPlayer != -1 and playerIndex == CheckPlayer:
+                        print(int(row[9]), "pongkong", csv_players[playerIndex].branchFactor, csv_players[playerIndex].gameLength)
                     continue
 
                 # set action hu
@@ -69,7 +76,10 @@ for filename in os.listdir(folder_path):
                 if row[0] == 'GunHu' or row[0] == 'CritSelfHu' or row[0] == 'GrabKongHu' or row[0] == 'CritGrabKongHu'\
                         or row[0] == 'SelfHu':
                     playerIndex = int(row[14])
-                    csv_players[playerIndex].action_pongkonghu()
+                    csv_players[playerIndex].action_hu()
+
+                    if CheckPlayer != -1 and playerIndex == CheckPlayer:
+                        print(int(row[9]), "Hu", csv_players[playerIndex].branchFactor, csv_players[playerIndex].gameLength)
                     continue
 
                 # set action bankruptcy
@@ -82,5 +92,7 @@ for filename in os.listdir(folder_path):
                     break
 
             for i in range(4):
-                print(csv_players[i].print_GR())
+                csv_players[i].print_GR()
+                csv_players[i].calculate_GR()
+                print('====================')
 
