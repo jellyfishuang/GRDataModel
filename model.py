@@ -69,7 +69,7 @@ class IGSPlayer:
             before_hand.append(discard)
             valueofhand = parse.CalculateHandTileKindOfPieces(before_hand)
             self.branchFactor += valueofhand
-
+    
         # 胡過之後手牌不能變動 (可能可槓 但不影響計算)
         if self.afterHu:
             self.branchFactor += 1
@@ -77,17 +77,18 @@ class IGSPlayer:
     # the player who do the action of Chi, Pong, Kong, Hu, the player's branchFactor must have add 1
     def action_pongkong(self):
         self.branchFactor += 1
-        # self.decisionCount += 1
+        self.decisionCount += 1
 
     def action_hu(self):
         self.branchFactor += 1
-        # self.decisionCount += 1
+        if self.afterHu is False:
+            self.decisionCount += 1
         self.HuCount += 1
         self.afterHu = True
 
     def action_bankruptcy(self):
         self.isBankruptcy = True
-
+    
     def print_Player(self):
         print('roomID:', self.roomID)
         print('gameType:', self.gameType)
@@ -113,12 +114,39 @@ class IGSPlayer:
     def calculate_GR(self):
         branch = self.branchFactor
         decision = self.decisionCount
-        G = branch / decision
-        print('G:', G)
-        R = self.gameLength
-        print('R:', R)
 
-        GR = math.sqrt(G)  / R
-        print('GR:', GR)
+        if decision == 0:
+            # print('Error: decisionCount is 0')
+            # print('roomID:', self.roomID)
+            # print('gameType:', self.gameType)
+            # print('gameLevel:', self.gameLevel)
+            return -1, -1, -1
+        else:
+            G = branch / decision
+            #print('G:', G)
+            R = self.gameLength
+            #print('R:', R)
+            if R == 0:
+                # 被天胡
+                # print('roomID:', self.roomID)
+                # print('gameType:', self.gameType)
+                # print('gameLevel:', self.gameLevel)
+                #return -1, -1, -1
+                R = 1
+            GR = math.sqrt(G)  / R
+            #print('GR:', GR)
+            return G, R, GR
+        
+        # if decision == 0:
+        #     decision = 1
+        
+        # G = branch / decision
+        # R = self.gameLength
+        # if R == 0:
+        #     # 被天胡
+        #     R = 1
+        # GR = math.sqrt(G)  / R
+        # #print('GR:', GR)
+        # return G, R, GR
 
 

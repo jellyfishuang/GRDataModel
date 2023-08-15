@@ -1,3 +1,5 @@
+import re
+
 def parseStartCheck (_string):
     # [ "Joker4", "Beginner", 2000, 32 ]
     cleaned_data = _string.strip("[] ")
@@ -11,6 +13,8 @@ def parseStartCheck (_string):
 def parseBeginDeal (_string):
     # [ "AI_0", "QING_YI_SE_20", 910000.0 ]
     # [ 4, "QING_YI_SE_10", 2031000.0 ]
+    # [ 3, "QING_YI_SE_23", { "$numberLong" : "664000" } ]
+    
     cleaned_data = _string.strip("[] ")
     data_list = cleaned_data.split(", ")
     isAI = True
@@ -18,13 +22,26 @@ def parseBeginDeal (_string):
         isAI = False
         playerVIP = int(data_list[0])
         playerHandmodeID = data_list[1].strip('"')
-        playerMoney = float(data_list[2])
+        playerMoney = extract_money(data_list[2])
         return isAI, playerVIP, playerHandmodeID, playerMoney
     else:
         AI_Mode = data_list[0].strip('"')
         playerHandmode = data_list[1].strip('"')
-        playerMoney = float(data_list[2])
+        playerMoney = extract_money(data_list[2])
         return isAI, AI_Mode, playerHandmode, playerMoney
+    
+def extract_money(money_str):
+    try:
+        # 嘗試將直接數值的字串轉換為浮點數
+        return float(money_str)
+    except ValueError:
+        # 如果無法轉換為浮點數，表示是字典格式
+        # 使用 eval() 函式來評估字典格式的數值
+        eval_dict = eval(money_str)
+        if "$numberLong" in eval_dict:
+            return float(eval_dict["$numberLong"])
+        else:
+            raise ValueError("Invalid money format: " + money_str)
     
 def parseHandTile (_string):
     # [ "DR", "A1", "A2", "A3", "A4", "A4", "A4", "A6", "A6", "A6", "A7", "A7", "A9", "A1" ]
